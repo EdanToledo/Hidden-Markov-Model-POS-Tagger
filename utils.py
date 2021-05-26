@@ -6,15 +6,15 @@ from collections import defaultdict
 import math
 
 def split_sentences(df):
-    tokens = df['Token']
+    pos = df['POS']
     sentences = []
     sen = []
-    for token in tokens:
-        if (pd.isna(token)):
+    for p in pos:
+        if (pd.isna(pos)):
             sentences.append(sen)
             sen = []
         else:
-            sen.append(token)
+            sen.append(pos)
     sentences.append(sen)
     return sentences
 
@@ -50,7 +50,6 @@ def get_vocab_counts(training_sentences):
 def get_bigram_prob(prev_tag,tag,double_tag_counts,total_tag_counts):
 
     return double_tag_counts[(prev_tag,tag)]/total_tag_counts[prev_tag]
-
 
 def get_sentence_tag_prob(sentence_tags,double_tag_counts,total_tag_counts):
     prob = 0
