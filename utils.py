@@ -5,6 +5,19 @@ import os
 from collections import defaultdict
 import math
 
+def split_sentences(df):
+    tokens = df['Token']
+    sentences = []
+    sen = []
+    for token in tokens:
+        if (pd.isna(token)):
+            sentences.append(sen)
+            sen = []
+        else:
+            sen.append(token)
+    sentences.append(sen)
+    return sentences
+
 def read_csv(filename):
     dirname = os.path.dirname(__file__)
     relative_file = os.path.join(dirname, filename)
