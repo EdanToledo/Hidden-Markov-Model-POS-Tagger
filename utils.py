@@ -50,6 +50,7 @@ def get_vocab_counts(training_sentences):
 
     return total_tag_counts, double_tag_counts
 
+
 def get_bigram_prob_laplace(prev_tag,tag,double_tag_counts,total_tag_counts):
 
     return (double_tag_counts[(prev_tag,tag)]+1)/(total_tag_counts[prev_tag] + len(total_tag_counts))
