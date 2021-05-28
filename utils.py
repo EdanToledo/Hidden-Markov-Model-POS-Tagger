@@ -52,13 +52,13 @@ def get_bigram_prob_laplace(prev_tag,tag,double_tag_counts,total_tag_counts):
     return (double_tag_counts[(prev_tag,tag)]+1)/(total_tag_counts[prev_tag] + len(total_tag_counts))
 
 
-def get_sentence_tag_prob(sentence_tags,double_tag_counts,total_tag_counts):
+def get_sentence_tag_prob(bi_gram_prob_func,sentence_tags,double_tag_counts,total_tag_counts):
     prob = 0
     prev_tag = "<s>"
     for tag in sentence_tags:
-        prob += math.log(get_bigram_prob_laplace(prev_tag,tag,double_tag_counts,total_tag_counts))
+        prob += math.log(bi_gram_prob_func(prev_tag,tag,double_tag_counts,total_tag_counts))
         prev_tag = tag
-    prob += math.log(get_bigram_prob_laplace(prev_tag,"</s>",double_tag_counts,total_tag_counts))
+    prob += math.log(bi_gram_prob_func(prev_tag,"</s>",double_tag_counts,total_tag_counts))
 
     return prob
          
