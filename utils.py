@@ -7,15 +7,18 @@ import math
 
 def split_sentences(df):
     pos = df['POS']
+    tokens = df['Token']
     sentences = []
     sen = []
-    for p in pos:
-        if (pd.isna(p)):
+    for i in range (0, len(pos)):
+        if (pd.isna(pos[i])):
             sentences.append(sen)
-            sen = []
+            print(sen, "\n")
+            sen = []      
         else:
-            sen.append(p)
-    sentences.append(sen)
+            sen.append((tokens[i], pos[i]))
+    sentences.append(sen)        
+
     return sentences
 
 def read_csv(filename):
@@ -72,3 +75,4 @@ def get_sentence_tag_prob(bi_gram_prob_func,sentence_tags,double_tag_counts,tota
 
 def linear_interpolation_smoothing(bi_lamba,bi_prob,uni_lambda,uni_prob):
     return bi_lamba*bi_prob+uni_lambda*uni_prob
+
