@@ -113,21 +113,16 @@ def viterbi(sentence, double_tag_counts, word_tags_counts, total_tag_counts):
     pi[prev_word][prev_tag] = 1
 
     for word in (sentence):
-        prob = 0
-        for tag in (total_tag_counts):
-            #(_,prev_tag) = bp[word][tag]
-            prob = (emission_table[word][tag] * bigram_table[prev_tag][tag] * pi[prev_word][prev_tag])
-            if pi[word][tag] < prob:
-                pi[word][tag] = prob
-                max_tag = prev_tag
+        for tag in total_tag_counts:
+            for prev_tag in total_tag_counts:
+                prob = (emission_table[word][tag] * bigram_table[prev_tag][tag] * pi[prev_word][prev_tag])
+                if pi[word][tag] < prob:
+                    pi[word][tag] = prob
+                    max_tag = prev_tag
+
+            bp[word][tag] = (prev_word,max_tag)
                 
-        
-        bp[word][tag] = (prev_word,max_tag)
-
-        
-            
-
-        prev_word = word
+            prev_word = word
     
     print(bp)
 
