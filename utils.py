@@ -10,11 +10,11 @@ def split_sentences(df):
     sentences = []
     sen = []
     for p in pos:
-        if (pd.isna(pos)):
+        if (pd.isna(p)):
             sentences.append(sen)
             sen = []
         else:
-            sen.append(pos)
+            sen.append(p)
     sentences.append(sen)
     return sentences
 
