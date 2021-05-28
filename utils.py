@@ -28,8 +28,8 @@ def read_csv(filename):
     return df
 
 
-def split_train_dev(df, percentage):
-    train, dev = train_test_split(df, test_size=percentage)
+def split_train_dev(sentences, percentage):
+    train, dev = train_test_split(sentences, test_size=percentage)
 
     return train, dev
 
@@ -76,3 +76,14 @@ def get_sentence_tag_prob(bi_gram_prob_func,sentence_tags,double_tag_counts,tota
 def linear_interpolation_smoothing(bi_lamba,bi_prob,uni_lambda,uni_prob):
     return bi_lamba*bi_prob+uni_lambda*uni_prob
 
+# what about y0 == <s>
+def viterbi(sentence, double_tag_counts, word_tags_counts, total_tag_counts):
+    pi = [[0]*len(total_tag_counts)]*len(sentence)
+    prev_tag = "<s>"
+    pi[0][0] = 1
+    for i, (word, tag) in enumerate(sentence):
+        for j,t in enumerate(total_tag_counts):
+            pi = get_emission_prob(word, t, word_tags_counts, total_tag_counts) * get_bigram_prob_laplace(prev_tag, t, double_tag_counts,total_tag_counts) * pi[i][j]
+        prev_tag = tag
+
+    
