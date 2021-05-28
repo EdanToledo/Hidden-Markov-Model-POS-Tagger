@@ -124,8 +124,21 @@ def viterbi(sentence, double_tag_counts, word_tags_counts, total_tag_counts):
     result = []
     tag = "</s>"
     for i in range(len(sentence)-1,-1,-1):
+        print("WORD:",sentence[i])
+        print("TAG:",tag)
         result.append((sentence[i],tag))
         tag = bp[sentence[i]][tag]
+        print(bp[sentence[i]][tag])
         
 
     return result[::-1]
+
+
+def eval(result,ground_truth):
+    count_true = 0
+    for i,(word,pos) in enumerate(result):
+        (true_word,true_pos) = ground_truth[i]
+        if word == true_word and pos == true_pos:
+            count_true+=1
+    
+    return count_true-2,len(ground_truth)
