@@ -123,13 +123,18 @@ def viterbi(sentence, double_tag_counts, word_tags_counts, total_tag_counts):
 
     result = []
     tag = "</s>"
-    for i in range(len(sentence)-1,-1,-1):
-        print("WORD:",sentence[i])
-        print("TAG:",tag)
-        result.append((sentence[i],tag))
-        tag = bp[sentence[i]][tag]
-        print(bp[sentence[i]][tag])
-        
+    for i in range(len(sentence)-1,0,-1):
+        # print("WORD:",sentence[i])
+        # print("TAG:",tag)
+        # result.append((sentence[i],tag))
+        # tag = bp[sentence[i]][tag]
+        if (bp[sentence[i]][tag] != ''): #Uknown
+            result.append((sentence[i],tag))
+            tag = bp[sentence[i]][tag]
+        else:
+            result.append((sentence[i],"UNK")) #HOW TO HANLDE UNK IN TERMS OF NEXT TAG
+        # print(bp[sentence[i]][tag])
+    result.append(("<s>","<s>"))   #dp not registering last s tags, so changes loop to not include it.
 
     return result[::-1]
 
