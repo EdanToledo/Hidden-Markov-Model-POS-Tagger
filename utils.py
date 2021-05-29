@@ -4,32 +4,26 @@ import pandas as pd
 import os
 from collections import defaultdict
 import math
-
-def split_sentences(df):
-    pos = df['POS']
-    tokens = df['Token']
-    sentences = []
-    sen = []
-    sen.append(("<s>","START"))   
-    for i in range (0, len(pos)):
-        if (pd.isna(tokens[i])):
-            sen.append(("</s>","END"))
-            sentences.append(sen)
-
-            sen = []   
-            sen.append(("<s>","START"))   
-        else:
-            sen.append((tokens[i], pos[i]))
-    sen.append(("</s>","END"))
-    sentences.append(sen)        
-
-    return sentences
+import csv
 
 def read_csv(filename):
-    dirname = os.path.dirname(__file__)
-    relative_file = os.path.join(dirname, filename)
-    df = pd.read_csv(relative_file)
-    return df
+    sentences = []
+    sen = []
+    sen.append(("<s>","START")) 
+    with open(filename) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter =",")
+        for row in csv_reader:
+            if row[0] == '':
+                sen.append(("</s>","END"))
+                sentences.append(sen)
+
+                sen = []   
+                sen.append(("<s>","START")) 
+            else:
+                sen.append((row[0].lower(), row[1]))
+    sen.append(("</s>","END"))
+    sentences.append(sen) 
+    return sentences
 
 
 def split_train_dev(sentences, percentage):
