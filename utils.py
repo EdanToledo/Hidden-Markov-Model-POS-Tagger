@@ -94,38 +94,36 @@ def linear_interpolation_smoothing(bi_lamba,bi_prob,uni_lambda,uni_prob):
 
 # what about y0 == <s>
 def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts):
-    pi = defaultdict(lambda: defaultdict(float))
-    bp = defaultdict(dict)
+    pi = [defaultdict(float)]
+    bp = [{}]
     emission_table = get_emission_prob_table(word_tag_counts,total_tag_counts)
     bigram_table = get_bigram_prob_table(double_tag_counts,total_tag_counts,get_bigram_prob_laplace)
 
-    
-    max_tag = ""
-    prev_word = "<s>"
     prev_tag = "START"
-    pi[prev_word][prev_tag] = 1
+    pi[0][prev_tag] = 1
     
-    for word in (sentence):
-        
+    for i in range(1,len(sentence)):
+        word = sentence[i]
+        pi.append(defaultdict(float))
+        bp.append({})
         for tag in total_tag_counts:
             
             for prev_tag in total_tag_counts:
                
-                prob = (emission_table[word][tag] * bigram_table[prev_tag][tag] * pi[prev_word][prev_tag])
+                prob = (emission_table[word][tag] * bigram_table[prev_tag][tag] * pi[i-1][prev_tag])
                 
-                if (pi[word][tag] < prob):
-                    pi[word][tag] = prob
-                    max_tag = prev_tag
+                if (pi[i][tag] < prob):
+                    pi[i][tag] = prob
+                    bp[i][tag] = prev_tag
 
-            bp[word][tag] = max_tag
+            
 
-        prev_word = word
 
     result = []
     tag = "END"
     for i in range(len(sentence)-1,0,-1):
         result.append((sentence[i],tag))
-        tag = bp[sentence[i]][tag]
+        tag = bp[i][tag]
     result.append(("<s>","START"))
 
     return result[::-1]
