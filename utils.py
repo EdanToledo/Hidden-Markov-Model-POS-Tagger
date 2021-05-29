@@ -1,10 +1,20 @@
 from numpy import double, set_printoptions
 from sklearn.model_selection import train_test_split
-import pandas as pd
 import os
 from collections import defaultdict
 import math
 import csv
+
+
+def write_csv(sentences,filename):
+    with open(filename+'.csv', mode='w') as csv_file:
+        file_writer = csv.writer(csv_file, delimiter=',')
+        file_writer.writerow(['Token', 'POS'])
+        for sentence in sentences:
+            for (word,tag) in sentence:
+                if word != "<s>" and word != "</s>" and word != "<UNK>":
+                    file_writer.writerow([word,tag])
+            file_writer.writerow(['', ''])
 
 def read_csv(filename):
     sentences = []
@@ -101,8 +111,7 @@ def get_emission_prob_table(word_tag_counts,total_tag_counts):
 
 def get_bigram_prob_table(double_tag_counts,total_tag_counts,bigram_prob_func):
     table = defaultdict(lambda : defaultdict(float))
-    for (prev_tag,_) in double_tag_counts:
-        
+    for prev_tag in total_tag_counts:
         for tag in total_tag_counts:
             table[prev_tag][tag] = bigram_prob_func(prev_tag,tag,double_tag_counts,total_tag_counts)
        
@@ -120,7 +129,7 @@ def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts):
 
     prev_tag = "START"
     pi[0][prev_tag] = 1
-    
+
     for i in range(1,len(sentence)):
         word = sentence[i]
         pi.append(defaultdict(float))
