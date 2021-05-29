@@ -12,15 +12,19 @@ def read_csv(filename):
     sen.append(("<s>","START")) 
     with open(filename) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter =",")
-        for row in csv_reader:
-            if row[0] == '':
-                sen.append(("</s>","END"))
-                sentences.append(sen)
 
-                sen = []   
-                sen.append(("<s>","START")) 
+        for i,row in enumerate(csv_reader):
+            if i == 0:
+                pass
             else:
-                sen.append((row[0].lower(), row[1]))
+                if row[0] == '':
+                    sen.append(("</s>","END"))
+                    sentences.append(sen)
+
+                    sen = []   
+                    sen.append(("<s>","START")) 
+                else:
+                    sen.append((row[0].lower(), row[1]))
     sen.append(("</s>","END"))
     sentences.append(sen) 
     return sentences
