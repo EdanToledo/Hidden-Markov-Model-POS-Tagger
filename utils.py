@@ -120,7 +120,7 @@ def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts):
 
     prev_tag = "START"
     pi[0][prev_tag] = 1
-
+    
     for i in range(1,len(sentence)):
         word = sentence[i]
         pi.append(defaultdict(float))
@@ -130,8 +130,14 @@ def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts):
             for prev_tag in total_tag_counts:
                
                 prob = (emission_table[word][tag] * bigram_table[prev_tag][tag] * pi[i-1][prev_tag])
+               
+                # if pi[i-1][prev_tag]>0:
+                #     print("WORD NUMBER:",i,"out of",len(sentence))
+                #     print(word,tag,"emmission:",emission_table[word][tag])
+                #     print(prev_tag,tag,"bigram:",bigram_table[prev_tag][tag])
+                #     print(sentence[i-1],prev_tag,"pi:",pi[i-1][prev_tag])
 
-                if (pi[i][tag] <= prob):
+                if (pi[i][tag] < prob):
                     pi[i][tag] = prob
                     bp[i][tag] = prev_tag
 
@@ -151,7 +157,8 @@ def eval(result,ground_truth):
     count_true = 0
     for i,(word,pos) in enumerate(result):
         (true_word,true_pos) = ground_truth[i]
-        
+        # if pos!=true_pos:
+        #     print(pos,true_pos)
         if word == true_word and pos == true_pos:
             count_true+=1
     
