@@ -206,7 +206,7 @@ def get_trigram_prob_table(triple_tag_counts,bigram_counts,total_tag_counts,trig
 
 def viterbi_trigram(sentence, double_tag_counts, triple_tag_counts, word_tag_counts, total_tag_counts):
     pi = defaultdict(float)
-    bp = [{}]
+    bp = defaultdict(float)
     emission_table = get_emission_prob_table(word_tag_counts,total_tag_counts)
     bigram_table = get_bigram_prob_table(double_tag_counts,total_tag_counts,get_bigram_prob_laplace)
     trigram_table = get_trigram_prob_table(triple_tag_counts, bigram_table, total_tag_counts, get_trigram_laplace_prob)
@@ -215,24 +215,22 @@ def viterbi_trigram(sentence, double_tag_counts, triple_tag_counts, word_tag_cou
     
     for i in range(1,len(sentence)):
         word = sentence[i]
-        bp.append({})
 
         for tag in total_tag_counts:
             for prev_tag in total_tag_counts:
-               for prev_prev_tag in total_tag_counts:
+                max_score = -1
+                max_tag = None
+                for prev_prev_tag in total_tag_counts:
                     print("here")
-                    prob = emission_table[word][tag] * trigram_table+[prev_prev_tag][prev_tag][tag] * pi.get(i-1,prev_prev_tag,prev_tag)
-               
-                    # if pi[i-1][prev_tag]>0:
-                    #     print("WORD NUMBER:",i,"out of",len(sentence))
-                    #     print(word,tag,"emmission:",emission_table[word][tag])
-                    #     print(prev_tag,tag,"bigram:",bigram_table[prev_tag][tag])
-                    #     print(sentence[i-1],prev_tag,"pi:",pi[i-1][prev_tag])
+                    prob = emission_table[word][tag] * trigram_table[prev_prev_tag][prev_tag][tag] * pi[(i-1,prev_prev_tag,prev_tag)]
+                    print("here")
 
-                    if (pi[i][tag] < prob):
-                        pi[i][tag] = prob
-                        bp[i][tag] = prev_tag
-
+                    if (max_score < prob):
+                        max_score = prob
+                        max_tag = prev_prev_tag
+                        
+                pi[(i,prev_tag,tag)] = max_score
+                bp[(i,prev_tag,tag)] = max_tag
             
     result = []
     tag = "END"
