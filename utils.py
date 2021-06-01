@@ -77,7 +77,9 @@ def get_vocab_counts(training_sentences):
         total_tag_counts["START"] += 1
         prev_tag = "START"
         word_tag_counts[("<s>", "START")] += 1
+
         for i in range(1, len(sentence)):
+
             (word, tag) = sentence[i]
             total_tag_counts[tag] += 1
             double_tag_counts[(prev_tag, tag)] += 1
@@ -122,8 +124,16 @@ def get_bigram_prob_table(double_tag_counts, total_tag_counts, bigram_prob_func)
     return table
 
 
-def linear_interpolation_smoothing(bi_lamba, bi_prob, uni_lambda, uni_prob):
-    return bi_lamba*bi_prob+uni_lambda*uni_prob
+def get_unigram_prob_table(total_tag_counts):
+    total = 0
+    for tag in total_tag_counts:
+        total += total_tag_counts[tag]
+
+    table = defaultdict(float)
+    for tag in total_tag_counts:
+        table[tag] = total_tag_counts[tag]/total
+
+    return table
 
 
 def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts):
@@ -146,12 +156,6 @@ def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts):
 
                 prob = (
                     emission_table[word][tag] * bigram_table[prev_tag][tag] * pi[i-1][prev_tag])
-
-                # if pi[i-1][prev_tag]>0:
-                #     print("WORD NUMBER:",i,"out of",len(sentence))
-                #     print(word,tag,"emmission:",emission_table[word][tag])
-                #     print(prev_tag,tag,"bigram:",bigram_table[prev_tag][tag])
-                #     print(sentence[i-1],prev_tag,"pi:",pi[i-1][prev_tag])
 
                 if (pi[i][tag] < prob):
                     pi[i][tag] = prob
@@ -180,28 +184,22 @@ def eval(result, ground_truth):
 
 
 def get_second_order_counts(training_sentences):
-    total_tag_counts = defaultdict(int)
+
     triple_tag_counts = defaultdict(int)
-    word_tag_counts = defaultdict(int)
 
     for i in range(len(training_sentences)):
-        total_tag_counts["START"] += 1
-        prev_prev_tag = "START"
-        word_tag_counts[("<s>", "START")] += 1
 
-        (word, prev_tag) = training_sentences[i][1]
-        total_tag_counts[prev_tag] += 1
-        word_tag_counts[(word, prev_tag)] += 1
+        prev_prev_tag = "START"
+
+        (_, prev_tag) = training_sentences[i][1]
 
         for j in range(2, len(training_sentences[i])):
-            (word, tag) = training_sentences[i][j]
-            total_tag_counts[tag] += 1
+            (_, tag) = training_sentences[i][j]
             triple_tag_counts[(prev_prev_tag, prev_tag, tag)] += 1
-            word_tag_counts[(word, tag)] += 1
             prev_prev_tag = prev_tag
             prev_tag = tag
 
-    return total_tag_counts, triple_tag_counts, word_tag_counts
+    return triple_tag_counts
 
 
 def get_trigram_laplace_prob(prev_prev_tag, prev_tag, tag, triple_tag_counts, bigram_count, total_tag_counts):
@@ -226,10 +224,15 @@ def get_trigram_prob_table(triple_tag_counts, bigram_counts, total_tag_counts, t
     return table
 
 
-def viterbi_trigram(sentence, double_tag_counts, triple_tag_counts, word_tag_counts, total_tag_counts):
+def viterbi_trigram(sentence, double_tag_counts, triple_tag_counts, word_tag_counts, total_tag_counts, tri_lambda, bi_lambda, uni_lambda):
+    if tri_lambda+bi_lambda+uni_lambda >1:
+        print("Please make sure lambda values sum to 1")
+        return
+    
     pi = [defaultdict(float)]
     bp = [{}]
     emission_table = get_emission_prob_table(word_tag_counts, total_tag_counts)
+    unigram_table = get_unigram_prob_table(total_tag_counts)
     bigram_table = get_bigram_prob_table(
         double_tag_counts, total_tag_counts, get_bigram_prob_laplace)
     trigram_table = get_trigram_prob_table(
@@ -253,7 +256,7 @@ def viterbi_trigram(sentence, double_tag_counts, triple_tag_counts, word_tag_cou
                 for prev_prev_tag in tag_subsets(i-2):
                     if emission_table[word][tag] != 0:
                         prob = pi[i-1][(prev_prev_tag, prev_tag)] * \
-                            trigram_table[prev_prev_tag][prev_tag][tag] * \
+                            ((tri_lambda * trigram_table[prev_prev_tag][prev_tag][tag]) + (bi_lambda * bigram_table[prev_tag][tag]) + (uni_lambda*unigram_table[tag])) * \
                             emission_table[word][tag]
 
                         if prob > pi[i][(prev_tag, tag)]:

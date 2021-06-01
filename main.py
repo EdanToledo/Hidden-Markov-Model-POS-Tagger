@@ -2,7 +2,7 @@ import utils
 import wandb
 import argparse
 
-def run(training_file,testing_file,use_trigram,unk_threshold,log_to_wandb):
+def run(training_file,testing_file,use_trigram,unk_threshold,log_to_wandb,tri_lambda,bi_lambda,uni_lambda):
     if log_to_wandb:
         wandb.init(project="POS-TAGGER-HMM")
 
@@ -13,7 +13,7 @@ def run(training_file,testing_file,use_trigram,unk_threshold,log_to_wandb):
     total_tag_counts, double_tag_counts, word_tag_counts = utils.get_vocab_counts(training_sentences)
     
     if use_trigram:
-        total_tag_counts, triple_tag_counts, word_tag_counts = utils.get_second_order_counts(training_sentences)
+        triple_tag_counts = utils.get_second_order_counts(training_sentences)
 
     
     testing_sentences ,_ = utils.read_csv(testing_file)
@@ -27,7 +27,7 @@ def run(training_file,testing_file,use_trigram,unk_threshold,log_to_wandb):
         sentence_words = [word for (word,_) in sentence]
         
         if use_trigram:
-            result = utils.viterbi_trigram(sentence_words, double_tag_counts, triple_tag_counts, word_tag_counts, total_tag_counts)
+            result = utils.viterbi_trigram(sentence_words, double_tag_counts, triple_tag_counts, word_tag_counts, total_tag_counts,tri_lambda,bi_lambda,uni_lambda)
         else:
             result = utils.viterbi(sentence_words,double_tag_counts,word_tag_counts,total_tag_counts)
         
@@ -47,6 +47,10 @@ if __name__ == "__main__":
     parser.add_argument('--training_file',"-tr",default="Training.csv",type=str,help='Name of training file')
     parser.add_argument('--testing_file',"-te",default="TestSet.csv",type=str,help='Name of testing file')
     parser.add_argument('--use_trigram',"-ut",action='store_true',help='Use trigram HMM model')
+    parser.add_argument('--log_wandb',"-lw",action='store_true',help='Log to weights and biases platform')
+    parser.add_argument('--tri_lambda',"-tl",default=1,type=float,help='lambda value for trigram probability in interpolation smoothing')
+    parser.add_argument('--bi_lambda',"-bl",default=0,type=float,help='lambda value for bigram probability in interpolation smoothing')
+    parser.add_argument('--uni_lambda',"-ul",default=0,type=float,help='lambda value for unigram probability in interpolation smoothing')
     
     args = parser.parse_args()
     
@@ -54,9 +58,13 @@ if __name__ == "__main__":
     training_file = args.training_file
     testing_file = args.testing_file
     use_trigram = args.use_trigram
+    log_to_wandb = args.log_wandb
+    tri_lambda = args.tri_lambda
+    bi_lambda = args.bi_lambda
+    uni_lambda = args.uni_lambda
     
 
-    run(training_file,testing_file,use_trigram,unk_threshold,True)
+    run(training_file,testing_file,use_trigram,unk_threshold,log_to_wandb,tri_lambda,bi_lambda,uni_lambda)
 
   
     
