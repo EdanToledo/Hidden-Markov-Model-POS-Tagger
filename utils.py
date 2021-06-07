@@ -11,7 +11,7 @@ def write_csv(sentences, filename):
         :param sentences: A 2d array of tuples in the form of (word,tag) for each word of each sentence, including start and end tags.
         :param filename: The name of the CSV file to write to.
     """
-    with open(filename+'.csv', mode='w') as csv_file:
+    with open(filename, mode='w') as csv_file:
         file_writer = csv.writer(csv_file, delimiter=',')
         file_writer.writerow(['Token', 'POS'])
         for sentence in sentences:
@@ -243,7 +243,7 @@ def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts, bi_l
         pi.append(defaultdict(float))
         bp.append({})
         for tag in total_tag_counts:
-
+            
             for prev_tag in total_tag_counts:
 
                 prob = (

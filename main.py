@@ -42,6 +42,7 @@ def run(training_file, testing_file, use_trigram, unk_threshold, log_to_wandb, t
     tot_count = 0
     tot_ground = 0
     print("Testing on the testing set...\n")
+    results = []
     for i, (sentence) in enumerate(testing_sentences):
         sentence_words = [word for (word, _) in sentence]
 
@@ -52,6 +53,7 @@ def run(training_file, testing_file, use_trigram, unk_threshold, log_to_wandb, t
             result = utils.viterbi(sentence_words, double_tag_counts,
                                    word_tag_counts, total_tag_counts, bi_lambda, uni_lambda)
 
+        results.append(result)
         count, total = (utils.eval(result, sentence))
         tot_count += count
         tot_ground += total
@@ -59,6 +61,8 @@ def run(training_file, testing_file, use_trigram, unk_threshold, log_to_wandb, t
               tot_ground*100, " percentage accuracy!")
         if log_to_wandb:
             wandb.log({"accuracy": tot_count/tot_ground*100})
+
+        utils.write_csv(results,"Testing_Prediction.csv")
 
 
 if __name__ == "__main__":
@@ -77,7 +81,7 @@ if __name__ == "__main__":
                         help='Log to weights and biases platform')
     parser.add_argument('--tri_lambda', "-tl", default=1, type=float,
                         help='lambda value for trigram probability in interpolation smoothing')
-    parser.add_argument('--bi_lambda', "-bl", default=1, type=float,
+    parser.add_argument('--bi_lambda', "-bl", default=10, type=float,
                         help='lambda value for bigram probability in interpolation smoothing')
     parser.add_argument('--uni_lambda', "-ul", default=1, type=float,
                         help='lambda value for unigram probability in interpolation smoothing')
