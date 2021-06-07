@@ -77,7 +77,7 @@ if __name__ == "__main__":
                         help='Log to weights and biases platform')
     parser.add_argument('--tri_lambda', "-tl", default=1, type=float,
                         help='lambda value for trigram probability in interpolation smoothing')
-    parser.add_argument('--bi_lambda', "-bl", default=10, type=float,
+    parser.add_argument('--bi_lambda', "-bl", default=1, type=float,
                         help='lambda value for bigram probability in interpolation smoothing')
     parser.add_argument('--uni_lambda', "-ul", default=1, type=float,
                         help='lambda value for unigram probability in interpolation smoothing')
@@ -92,9 +92,6 @@ if __name__ == "__main__":
     tri_lambda = args.tri_lambda
     bi_lambda = args.bi_lambda
     uni_lambda = args.uni_lambda
-
-    log_to_wandb = True
-    use_trigram = True
 
 
     run(training_file, testing_file, use_trigram, unk_threshold,
