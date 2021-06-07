@@ -84,9 +84,9 @@ if __name__ == "__main__":
         description='Train an HMM-POS tagger and evaluate it on a testing set')
     parser.add_argument('--unk_threshold', "-u", default=1, type=int,
                         help='Lower bound of word frequency before being regarded as <UNK>')
-    parser.add_argument('--training_file', "-tr", default="Split_Train.csv",
+    parser.add_argument('--training_file', "-tr", default="Training.csv",
                         type=str, help='Name of training file')
-    parser.add_argument('--testing_file', "-te", default="Split_Dev.csv",
+    parser.add_argument('--testing_file', "-te", default="TestSet.csv",
                         type=str, help='Name of testing file')
     parser.add_argument('--use_trigram', "-ut",
                         action='store_true', help='Use trigram HMM model')

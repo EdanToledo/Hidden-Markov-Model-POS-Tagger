@@ -361,6 +361,7 @@ def viterbi_trigram(sentence, double_tag_counts, triple_tag_counts, word_tag_cou
 
         :return result: An array of tuples in the form of (word,tag).
     """
+    # Normalize the lambda values to sum to one
     lambda_sum = tri_lambda+bi_lambda+uni_lambda
     if lambda_sum > 1:
         tri_lambda /= lambda_sum
@@ -378,19 +379,22 @@ def viterbi_trigram(sentence, double_tag_counts, triple_tag_counts, word_tag_cou
 
     pi[0][("START", "START")] = 1
 
-    # OPTIMIZES NUMBER OF LOOPS NECESSARY
+    # SLIGHTLY REDUCE NUMBER OF LOOPS NECESSARY
     def tag_subsets(k):
         if k in (-1, 0):
             return {"START"}
         else:
             return total_tag_counts
-
+    # iterate through the words in the sentence
     for i in range(1, len(sentence)):
         word = sentence[i]
         pi.append(defaultdict(float))
         bp.append({})
+        # iterate through all possible previous tags 
         for prev_tag in tag_subsets(i-1):
+            #iterate through all possible current tags
             for tag in total_tag_counts:
+                # iterate through all possible previous previous tag
                 for prev_prev_tag in tag_subsets(i-2):
                     if emission_table[word][tag] != 0:
                         prob = pi[i-1][(prev_prev_tag, prev_tag)] * \
@@ -401,21 +405,23 @@ def viterbi_trigram(sentence, double_tag_counts, triple_tag_counts, word_tag_cou
                             pi[i][(prev_tag, tag)] = prob
                             bp[i][(prev_tag, tag)] = prev_prev_tag
 
-    max_score = float('-Inf')
+    #Calculate the max two last tags in sentence
+    max_val = float('-Inf')
     prev_max_tag, tag_max_tag = None, None
     for prev_tag in total_tag_counts:
         for tag in total_tag_counts:
             prob = pi[len(sentence)-1][(prev_tag, tag)] * \
                 trigram_table[prev_tag][tag]["END"]
 
-            if prob > max_score:
-                max_score = prob
+            if prob > max_val:
+                max_val = prob
                 prev_max_tag = prev_tag
                 tag_max_tag = tag
 
     tag = tag_max_tag
     prev_tag = prev_max_tag
 
+    # Backprop to build tags 
     result = []
     for i in range(len(sentence)-1, 0, -1):
         result.append((sentence[i], tag))
