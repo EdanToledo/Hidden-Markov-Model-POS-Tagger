@@ -11,9 +11,9 @@ def run(training_file, testing_file, use_trigram, unk_threshold, log_to_wandb, t
         :param use_trigram: Boolean to dictate whether to run a first order (false) or second order (true) HMM POS.
         :param unk_threshold: An int that dicates the minimum frequency a word must have before being replaces with UNK.
         :param log_to_wandb: Boolean to dictate whether or not to log the accuracy to the wandb platform.
-        :param tri_lambda: The weighting given to trigram proabilities.
-        :param bi_lambda: The weighting given to bigram proabilities.
-        :param uni_lambda: The weighting given to unigram probabilities. 
+        :param tri_lambda: The weighting (float) given to trigram proabilities.
+        :param bi_lambda: The weighting (float) given to bigram proabilities.
+        :param uni_lambda: The weighting (float) given to unigram probabilities. 
     """
     
     if log_to_wandb:

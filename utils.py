@@ -8,7 +8,7 @@ import csv
 def write_csv(sentences, filename):
     """Writes the the sentences provided, with each word's tags, into a CSV file.
 
-        :param sentences:  A 2d array of tuples in the form of (word,tag) for each word of each sentence, including start and end tags.
+        :param sentences: A 2d array of tuples in the form of (word,tag) for each word of each sentence, including start and end tags.
         :param filename: The name of the CSV file to write to.
     """
     with open(filename+'.csv', mode='w') as csv_file:
@@ -22,7 +22,7 @@ def write_csv(sentences, filename):
 
 
 def read_csv(filename):
-    """Reads a CSV file and iterates through it, stores and returns all relevant information in the file.
+    """Reads a CSV file and iterates through it extracts each sentence's words and tags from the file.
 
         :param filename: The name of the CSV file to read from.
         
@@ -81,7 +81,7 @@ def convert_to_unk(sentences, word_counts, threshold):
         :param word_counts: A dict of word to integer, which is the frequency of each words occurence.
         :param threshold: An int that dicates the minimum frequency a word must have before being replaces with UNK.
 
-        :return new_sentences: The new 2d array of tuples of sentences with the replaced words.
+        :return new_sentences: The new 2d array of tuples in the form of (word,tag) for each word of each sentence.
     """
     new_sentences = []
     for sentence in sentences:
@@ -103,7 +103,7 @@ def get_vocab_counts(training_sentences):
 
         :return total_tag_counts: A dict of each tag's frequency.
         :return double_tag_counts: A dict of each occurence of two consecutive tags and their frequencies.
-        :return word_tag_counts: A dict of (word, tag) pairing and thier frequency.
+        :return word_tag_counts: A dict of (word, tag) pairing and their frequency.
     """
     total_tag_counts = defaultdict(int)
     double_tag_counts = defaultdict(int)
@@ -125,35 +125,19 @@ def get_vocab_counts(training_sentences):
 
 
 def get_emission_prob(word, tag, word_tag_counts, total_tag_counts):
-    """Calcualtes the probability of given a tag occuring given a word.
+    """Calcualtes the probability of a given tag occuring given a word.
 
-        :param word: The word in the sentence.
-        :param tag: The tag in the sentence.
+        :param word: The given word.
+        :param tag: The given tag.
         :param word_tag_counts: A dict of (word, tag) pairing and their frequency.
         :param total_tag_counts: A dict of each tag's frequency.
 
-        :return: The probability of the tag occuring given the word.
+        :return: The probability (float) of the tag occuring given the word.
     """
     if ((word, tag) in word_tag_counts):
         return word_tag_counts[(word, tag)]/total_tag_counts[tag]
     else:
         return 0
-
-
-def get_bigram_prob_laplace(prev_tag, tag, double_tag_counts, total_tag_counts):
-    """Calculates the probability of a tag occuring given another tag (bigram probability), using laplace (add 1) smoothing.
-
-        :param prev_tag: The previous tag in the sentence.
-        :param tag: The current tag in the sentence.
-        :param double_tag_counts: A dict of each occurence of two consecutive tags and their frequencies.
-        :param total_tag_counts: A dict of each tag's frequency.
-
-        :return: The probability of the given tag occuring given the previous tag.
-    """
-    if ((prev_tag, tag) in double_tag_counts):
-        return (double_tag_counts[(prev_tag, tag)]+1)/(total_tag_counts[prev_tag] + len(total_tag_counts))
-    else:
-        return 1/(total_tag_counts[prev_tag] + len(total_tag_counts))
 
 
 def get_emission_prob_table(word_tag_counts, total_tag_counts):
@@ -162,7 +146,7 @@ def get_emission_prob_table(word_tag_counts, total_tag_counts):
         :param word_tag_counts: A dict of (word, tag) pairing and their frequency.
         :param total_tag_coutns: A dict of each tag's frequency.
 
-        :return table: A dict of each word tag pair and their respective emittion probabilities.
+        :return table: A dict of dicts containing word tag pairs and their respective emission probabilities.
     """
     table = defaultdict(lambda: defaultdict(float))
     for (word, _) in word_tag_counts:
@@ -174,6 +158,22 @@ def get_emission_prob_table(word_tag_counts, total_tag_counts):
     return table
 
 
+def get_bigram_prob_laplace(prev_tag, tag, double_tag_counts, total_tag_counts):
+    """Calculates the probability of a tag occuring given another tag (bigram probability), using laplace (add 1) smoothing.
+
+        :param prev_tag: The previous tag in the sentence.
+        :param tag: The current tag in the sentence.
+        :param double_tag_counts: A dict of each occurence of two consecutive tags and their frequencies.
+        :param total_tag_counts: A dict of each tag's frequency.
+
+        :return: The probability (float) of the given tag occuring given the previous tag.
+    """
+    if ((prev_tag, tag) in double_tag_counts):
+        return (double_tag_counts[(prev_tag, tag)]+1)/(total_tag_counts[prev_tag] + len(total_tag_counts))
+    else:
+        return 1/(total_tag_counts[prev_tag] + len(total_tag_counts))
+
+
 def get_bigram_prob_table(double_tag_counts, total_tag_counts, bigram_prob_func):
     """Contructs a dict of each tag tag pair and their respective bigram probabilities.
 
@@ -181,7 +181,7 @@ def get_bigram_prob_table(double_tag_counts, total_tag_counts, bigram_prob_func)
         :param total_tag_counts: A dict of each tag's frequency.
         :param bigram_prob_func: The function to be used when calculating bigram probabilites
 
-        :return table: A dict of each tag tag pair and their respective bigram probabilities.
+        :return table: A dict of dicts containing tag tag pairs and their respective bigram probabilities.
     """
     table = defaultdict(lambda: defaultdict(float))
     for prev_tag in total_tag_counts:
@@ -197,7 +197,7 @@ def get_unigram_prob_table(total_tag_counts):
 
         :param total_tag_counts: A dict of each tag's frequency.
 
-        :return table: A dict of tags and the probabilies occuring
+        :return table: A dict of tags and the probabilies occuring.
     """
     total = 0
     for tag in total_tag_counts:
@@ -217,8 +217,8 @@ def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts, bi_l
         :param double_tag_counts: A dict of each occurence of two consecutive tags and their frequencies.
         :param word_tag_counts: A dict of (word, tag) pairing and their frequency.
         :param total_tag_counts: A dict of each tag's frequency.
-        :param bi_lambda: The weighting given to bigram proabilities.
-        :param uni_lambda: The weighting given to unigram probabilities. 
+        :param bi_lambda: The weighting (float) given to bigram proabilities.
+        :param uni_lambda: The weighting (float) given to unigram probabilities. 
 
         :return result: An array of tuples in the form of (word,tag).
     """
@@ -258,13 +258,13 @@ def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts, bi_l
 
 
 def eval(result, ground_truth):
-    """Compares the HMM POS result with the actual result and returns the number of correct tag and the number of total tags in the sentence.
+    """Compares the HMM POS result with the actual result and returns the number of correct tags and the number of total tags in the sentence.
 
         :param result: An array of tuples in the form of (word,tag).
         :param ground_truth: An array of tuples in the form of (word,tag).
 
-        :return count_true: The total number of correct tags.
-        :return len_ground_truth: The total number of tags in the sentence.
+        :return count_true: The total number (int) of correct tags.
+        :return len_ground_truth: The total number (int) of tags in the sentence .
     """
     count_true = 0
     for i, (word, pos) in enumerate(result):
@@ -310,7 +310,7 @@ def get_trigram_laplace_prob(prev_prev_tag, prev_tag, tag, triple_tag_counts, bi
         :param triple_tag_counts: A dict of each occurence of three consecutive tags and their frequencies.
         :param total_tag_counts: A dict of each tag's frequency.
 
-        :return: The probability of the given tag occuring given two previous tags.
+        :return: The probability (float) of the given tag occuring given two previous tags.
     """
 
     if ((prev_prev_tag, prev_tag, tag) in triple_tag_counts):
@@ -349,9 +349,9 @@ def viterbi_trigram(sentence, double_tag_counts, triple_tag_counts, word_tag_cou
         :param triple_tag_counts: A dict of each occurence of three consecutive tags and their frequencies.
         :param word_tag_counts: A dict of (word, tag) pairing and their frequency.
         :param total_tag_counts: A dict of each tag's frequency.
-        :param tri_lambda: The weighting given to trigram proabilities.
-        :param bi_lambda: The weighting given to bigram proabilities.
-        :param uni_lambda: The weighting given to unigram probabilities. 
+        :param tri_lambda: The weighting (float) given to trigram proabilities.
+        :param bi_lambda: The weighting (float) given to bigram proabilities.
+        :param uni_lambda: The weighting (float) given to unigram probabilities. 
 
         :return result: An array of tuples in the form of (word,tag).
     """
