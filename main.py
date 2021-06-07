@@ -19,30 +19,41 @@ def run(training_file, testing_file, use_trigram, unk_threshold, log_to_wandb, t
     if log_to_wandb:
         wandb.init(project="POS-TAGGER-HMM")
 
+    # get training sentences and the frequency of words from the data
     training_sentences, training_word_count = utils.read_csv(training_file)
 
+    # This is for splitting the dev and training set
     # training_sentences, dev_sentences = utils.split_train_dev(training_sentences,0.15)
     # utils.write_csv(training_sentences,"Split_Train")
     # utils.write_csv(dev_sentences,"Split_Dev")
 
+    # Convert low frequency words into <UNK> words
     training_sentences = utils.convert_to_unk(
         training_sentences, training_word_count, unk_threshold)
 
+    # Get the bigram, unigram and word given tag counts
     total_tag_counts, double_tag_counts, word_tag_counts = utils.get_vocab_counts(
         training_sentences)
 
+    # if necessary get the trigram counts
     if use_trigram:
         triple_tag_counts = utils.get_second_order_counts(training_sentences)
 
+    # get the testing sentences
     testing_sentences, _ = utils.read_csv(testing_file)
 
+    # convert unseen words to <UNK>
     testing_sentences = utils.convert_to_unk(
         testing_sentences, training_word_count, unk_threshold)
-
+    
+    print("Testing on the testing set...\n")
+    
     tot_count = 0
     tot_ground = 0
-    print("Testing on the testing set...\n")
     results = []
+    number_of_sentences = len(testing_sentences)
+    
+
     for i, (sentence) in enumerate(testing_sentences):
         sentence_words = [word for (word, _) in sentence]
 
@@ -60,7 +71,9 @@ def run(training_file, testing_file, use_trigram, unk_threshold, log_to_wandb, t
         
         if log_to_wandb:
             wandb.log({"accuracy": tot_count/tot_ground*100})
-
+        print((i/number_of_sentences)*100,"% complete")
+    
+    # write predicting results
     utils.write_csv(results,"Testing_Prediction.csv")
     print("The models shows a", tot_count / tot_ground*100, " percentage accuracy!")
 
