@@ -57,12 +57,12 @@ def run(training_file, testing_file, use_trigram, unk_threshold, log_to_wandb, t
         count, total = (utils.eval(result, sentence))
         tot_count += count
         tot_ground += total
-        print("The models shows a", tot_count /
-              tot_ground*100, " percentage accuracy!")
+        
         if log_to_wandb:
             wandb.log({"accuracy": tot_count/tot_ground*100})
 
-        utils.write_csv(results,"Testing_Prediction.csv")
+    utils.write_csv(results,"Testing_Prediction.csv")
+    print("The models shows a", tot_count / tot_ground*100, " percentage accuracy!")
 
 
 if __name__ == "__main__":
