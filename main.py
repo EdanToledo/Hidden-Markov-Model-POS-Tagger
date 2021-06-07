@@ -32,7 +32,7 @@ def run(training_file, testing_file, use_trigram, unk_threshold, log_to_wandb, t
         training_sentences, training_word_count, unk_threshold)
 
     # Get the bigram, unigram and word given tag counts
-    total_tag_counts, double_tag_counts, word_tag_counts = utils.get_vocab_counts(
+    total_tag_counts, double_tag_counts, word_tag_counts , word_tag_list = utils.get_vocab_counts(
         training_sentences)
 
     # if necessary get the trigram counts
@@ -62,7 +62,7 @@ def run(training_file, testing_file, use_trigram, unk_threshold, log_to_wandb, t
                                            word_tag_counts, total_tag_counts, tri_lambda, bi_lambda, uni_lambda)
         else:
             result = utils.viterbi(sentence_words, double_tag_counts,
-                                   word_tag_counts, total_tag_counts, bi_lambda, uni_lambda)
+                                   word_tag_counts, total_tag_counts, bi_lambda, uni_lambda,word_tag_list)
 
         results.append(result)
         count, total = (utils.eval(result, sentence))

@@ -108,7 +108,8 @@ def get_vocab_counts(training_sentences):
     total_tag_counts = defaultdict(int)
     double_tag_counts = defaultdict(int)
     word_tag_counts = defaultdict(int)
-
+    word_tag_list = defaultdict(set)
+    word_tag_list["<s>"].add("START")
     for sentence in training_sentences:
         #Count the start tag, and set it to prev_tag
         total_tag_counts["START"] += 1
@@ -116,14 +117,15 @@ def get_vocab_counts(training_sentences):
         word_tag_counts[("<s>", "START")] += 1
 
         for i in range(1, len(sentence)):
-
+            
             (word, tag) = sentence[i]
+            word_tag_list[word].add(tag)
             total_tag_counts[tag] += 1
             double_tag_counts[(prev_tag, tag)] += 1
             word_tag_counts[(word, tag)] += 1
             prev_tag = tag
 
-    return total_tag_counts, double_tag_counts, word_tag_counts
+    return total_tag_counts, double_tag_counts, word_tag_counts , word_tag_list
 
 
 def get_emission_prob(word, tag, word_tag_counts, total_tag_counts):
@@ -212,7 +214,7 @@ def get_unigram_prob_table(total_tag_counts):
     return table
 
 
-def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts, bi_lambda, uni_lambda):
+def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts, bi_lambda, uni_lambda,word_tag_list):
     """Implementation of the first order Viterbi algorithm, which is used to tag unseen words in a first order HMM.
 
         :param sentence: An array of words in the sentence to be tagged.
@@ -246,15 +248,15 @@ def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts, bi_l
         word = sentence[i]
         pi.append(defaultdict(float)) #Add column to pi and bp
         bp.append({})
+        
+        for tag in word_tag_list[word]: #Nested for loop to check every combination of tags
 
-        for tag in total_tag_counts: #Nested for loop to check every combination of tags
-
-            for prev_tag in total_tag_counts:
+            for prev_tag in word_tag_list[sentence[i-1]]:
 
                 #Calculate probability using interpolation smoothing 
                 prob = (
                     emission_table[word][tag] * ((bi_lambda * bigram_table[prev_tag][tag]) + (uni_lambda*unigram_table[tag])) * pi[i-1][prev_tag])
-
+                
                 #If bigger than current max, then update current max
                 if (pi[i][tag] < prob):
                     pi[i][tag] = prob
