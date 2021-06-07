@@ -19,6 +19,8 @@ def write_csv(sentences, filename):
 
 
 def read_csv(filename):
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, filename)
     sentences = []
     sen = []
     word_count = defaultdict(int)
@@ -29,7 +31,7 @@ def read_csv(filename):
 
         for i, row in enumerate(csv_reader):
             if i == 0:
-                pass
+                continue
             else:
                 if row[0] == '':
                     word_count["</s>"] += 1
@@ -72,14 +74,13 @@ def get_vocab_counts(training_sentences):
     total_tag_counts = defaultdict(int)
     double_tag_counts = defaultdict(int)
     word_tag_counts = defaultdict(int)
-    tot = 0
     for sentence in training_sentences:
         total_tag_counts["START"] += 1
         prev_tag = "START"
         word_tag_counts[("<s>", "START")] += 1
 
         for i in range(1, len(sentence)):
-            tot += 1
+
             (word, tag) = sentence[i]
             total_tag_counts[tag] += 1
             double_tag_counts[(prev_tag, tag)] += 1
@@ -94,6 +95,7 @@ def get_bigram_prob_laplace(prev_tag, tag, double_tag_counts, total_tag_counts):
         return (double_tag_counts[(prev_tag, tag)]+1)/(total_tag_counts[prev_tag] + len(total_tag_counts))
     else:
         return 1/(total_tag_counts[prev_tag] + len(total_tag_counts))
+        
 
 
 def get_emission_prob(word, tag, word_tag_counts, total_tag_counts):
@@ -176,8 +178,6 @@ def eval(result, ground_truth):
     count_true = 0
     for i, (word, pos) in enumerate(result):
         (true_word, true_pos) = ground_truth[i]
-        # if pos!=true_pos:
-        #     print(pos,true_pos)
         if word == true_word and pos == true_pos:
             count_true += 1
 
@@ -210,7 +210,6 @@ def get_trigram_laplace_prob(prev_prev_tag, prev_tag, tag, triple_tag_counts, bi
         return (triple_tag_counts[(prev_prev_tag, prev_tag, tag)]+1)/(bigram_count[prev_prev_tag][prev_tag] + len(total_tag_counts))
 
     else:
-
         return 1/(total_tag_counts[prev_tag] + len(total_tag_counts))
 
 
