@@ -139,6 +139,11 @@ def get_unigram_prob_table(total_tag_counts):
 
 
 def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts, bi_lambda, uni_lambda):
+    lambda_sum = bi_lambda+uni_lambda
+    if lambda_sum > 1:
+        bi_lambda /= lambda_sum
+        uni_lambda /= lambda_sum
+
     pi = [defaultdict(float)]
     bp = [{}]
     emission_table = get_emission_prob_table(word_tag_counts, total_tag_counts)
@@ -210,7 +215,7 @@ def get_trigram_laplace_prob(prev_prev_tag, prev_tag, tag, triple_tag_counts, bi
         return (triple_tag_counts[(prev_prev_tag, prev_tag, tag)]+1)/(bigram_count[prev_prev_tag][prev_tag] + len(total_tag_counts))
 
     else:
-        return 1/(total_tag_counts[prev_tag] + len(total_tag_counts))
+        return 1/(bigram_count[prev_prev_tag][prev_tag] + len(total_tag_counts))
 
 
 def get_trigram_prob_table(triple_tag_counts, bigram_counts, total_tag_counts, trigram_prob_func):
@@ -225,6 +230,18 @@ def get_trigram_prob_table(triple_tag_counts, bigram_counts, total_tag_counts, t
 
 
 def viterbi_trigram(sentence, double_tag_counts, triple_tag_counts, word_tag_counts, total_tag_counts, tri_lambda, bi_lambda, uni_lambda):
+    """
+
+    :param sentence:
+    :param double_tag_counts:
+    :param triple_tag_counts:
+    :param word_tag_counts:
+    :param total_tag_counts:
+    :param tri_lambda:
+    :param bi_lambda:
+    :param uni_lambda:
+    :return:
+    """
     lambda_sum = tri_lambda+bi_lambda+uni_lambda
     if lambda_sum > 1:
         tri_lambda /= lambda_sum

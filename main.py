@@ -55,9 +55,9 @@ if __name__ == "__main__":
         description='Train an HMM-POS tagger and evaluate it on a testing set')
     parser.add_argument('--unk_threshold', "-u", default=1, type=int,
                         help='Lower bound of word frequency before being regarded as <UNK>')
-    parser.add_argument('--training_file', "-tr", default="Split_Train.csv",
+    parser.add_argument('--training_file', "-tr", default="Training.csv",
                         type=str, help='Name of training file')
-    parser.add_argument('--testing_file', "-te", default="Split_Dev.csv",
+    parser.add_argument('--testing_file', "-te", default="TestSet.csv",
                         type=str, help='Name of testing file')
     parser.add_argument('--use_trigram', "-ut",
                         action='store_true', help='Use trigram HMM model')
@@ -65,7 +65,7 @@ if __name__ == "__main__":
                         help='Log to weights and biases platform')
     parser.add_argument('--tri_lambda', "-tl", default=1, type=float,
                         help='lambda value for trigram probability in interpolation smoothing')
-    parser.add_argument('--bi_lambda', "-bl", default=1, type=float,
+    parser.add_argument('--bi_lambda', "-bl", default=10, type=float,
                         help='lambda value for bigram probability in interpolation smoothing')
     parser.add_argument('--uni_lambda', "-ul", default=1, type=float,
                         help='lambda value for unigram probability in interpolation smoothing')
