@@ -108,7 +108,9 @@ def get_vocab_counts(training_sentences):
     total_tag_counts = defaultdict(int)
     double_tag_counts = defaultdict(int)
     word_tag_counts = defaultdict(int)
+
     for sentence in training_sentences:
+        #Count the start tag, and set it to prev_tag
         total_tag_counts["START"] += 1
         prev_tag = "START"
         word_tag_counts[("<s>", "START")] += 1
@@ -223,43 +225,51 @@ def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts, bi_l
         :return result: An array of tuples in the form of (word,tag).
     """
 
+    #Check to make sure that the lambda's aren't greater than 1.
     lambda_sum = bi_lambda+uni_lambda
     if lambda_sum > 1:
         bi_lambda /= lambda_sum
         uni_lambda /= lambda_sum
         
-    pi = [defaultdict(float)]
-    bp = [{}]
+    pi = [defaultdict(float)] 
+    bp = [{}] #back pointer
     emission_table = get_emission_prob_table(word_tag_counts, total_tag_counts)
     unigram_table = get_unigram_prob_table(total_tag_counts)
     bigram_table = get_bigram_prob_table(
         double_tag_counts, total_tag_counts, get_bigram_prob_laplace)
 
+    #Set initial conditions for viterbi algorithm
     prev_tag = "START"
     pi[0][prev_tag] = 1
 
-    for i in range(1, len(sentence)):
+    for i in range(1, len(sentence)): #Iterate over every word in sentence
         word = sentence[i]
-        pi.append(defaultdict(float))
+        pi.append(defaultdict(float)) #Add column to pi and bp
         bp.append({})
-        for tag in total_tag_counts:
+
+        for tag in total_tag_counts: #Nested for loop to check every combination of tags
 
             for prev_tag in total_tag_counts:
 
+                #Calculate probability using interpolation smoothing 
                 prob = (
                     emission_table[word][tag] * ((bi_lambda * bigram_table[prev_tag][tag]) + (uni_lambda*unigram_table[tag])) * pi[i-1][prev_tag])
 
+                #If bigger than current max, then update current max
                 if (pi[i][tag] < prob):
                     pi[i][tag] = prob
                     bp[i][tag] = prev_tag
 
+
     result = []
     tag = "END"
+    #Iterate backwards through the back pointers to find most probable path.
     for i in range(len(sentence)-1, 0, -1):
         result.append((sentence[i], tag))
         tag = bp[i][tag]
     result.append(("<s>", "START"))
 
+    #Return reversed list of (word, tag) and so that it starts from the beginning
     return result[::-1]
 
 
