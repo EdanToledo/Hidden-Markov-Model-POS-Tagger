@@ -72,14 +72,14 @@ def get_vocab_counts(training_sentences):
     total_tag_counts = defaultdict(int)
     double_tag_counts = defaultdict(int)
     word_tag_counts = defaultdict(int)
-
+    tot = 0
     for sentence in training_sentences:
         total_tag_counts["START"] += 1
         prev_tag = "START"
         word_tag_counts[("<s>", "START")] += 1
 
         for i in range(1, len(sentence)):
-
+            tot += 1
             (word, tag) = sentence[i]
             total_tag_counts[tag] += 1
             double_tag_counts[(prev_tag, tag)] += 1
@@ -136,10 +136,11 @@ def get_unigram_prob_table(total_tag_counts):
     return table
 
 
-def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts):
+def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts, bi_lambda, uni_lambda):
     pi = [defaultdict(float)]
     bp = [{}]
     emission_table = get_emission_prob_table(word_tag_counts, total_tag_counts)
+    unigram_table = get_unigram_prob_table(total_tag_counts)
     bigram_table = get_bigram_prob_table(
         double_tag_counts, total_tag_counts, get_bigram_prob_laplace)
 
@@ -155,7 +156,7 @@ def viterbi(sentence, double_tag_counts, word_tag_counts, total_tag_counts):
             for prev_tag in total_tag_counts:
 
                 prob = (
-                    emission_table[word][tag] * bigram_table[prev_tag][tag] * pi[i-1][prev_tag])
+                    emission_table[word][tag] * ((bi_lambda * bigram_table[prev_tag][tag]) + (uni_lambda*unigram_table[tag])) * pi[i-1][prev_tag])
 
                 if (pi[i][tag] < prob):
                     pi[i][tag] = prob
@@ -225,10 +226,12 @@ def get_trigram_prob_table(triple_tag_counts, bigram_counts, total_tag_counts, t
 
 
 def viterbi_trigram(sentence, double_tag_counts, triple_tag_counts, word_tag_counts, total_tag_counts, tri_lambda, bi_lambda, uni_lambda):
-    if tri_lambda+bi_lambda+uni_lambda >1:
-        print("Please make sure lambda values sum to 1")
-        return
-    
+    lambda_sum = tri_lambda+bi_lambda+uni_lambda
+    if lambda_sum > 1:
+        tri_lambda /= lambda_sum
+        bi_lambda /= lambda_sum
+        uni_lambda /= lambda_sum
+
     pi = [defaultdict(float)]
     bp = [{}]
     emission_table = get_emission_prob_table(word_tag_counts, total_tag_counts)
