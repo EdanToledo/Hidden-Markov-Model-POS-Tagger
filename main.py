@@ -4,6 +4,18 @@ import argparse
 
 
 def run(training_file, testing_file, use_trigram, unk_threshold, log_to_wandb, tri_lambda, bi_lambda, uni_lambda):
+    """Main method to run the HMM POS tagger.
+
+        :param training_file: Name of the CSV file used to train the HMM POS.
+        :param testing_file: Name of the CSV file used to test the HMM POS.
+        :param use_trigram: Boolean to dictate whether to run a first order (false) or second order (true) HMM POS.
+        :param unk_threshold: An int that dicates the minimum frequency a word must have before being replaces with UNK.
+        :param log_to_wandb: Boolean to dictate whether or not to log the accuracy to the wandb platform.
+        :param tri_lambda: The weighting (float) given to trigram proabilities.
+        :param bi_lambda: The weighting (float) given to bigram proabilities.
+        :param uni_lambda: The weighting (float) given to unigram probabilities. 
+    """
+    
     if log_to_wandb:
         wandb.init(project="POS-TAGGER-HMM")
 
