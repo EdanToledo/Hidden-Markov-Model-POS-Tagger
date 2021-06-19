@@ -1,5 +1,5 @@
 # POS-HMM
-## Assignment 1: Part-of-Speech Tagging with Hidden Markov Models
+## Part-of-Speech Tagging with Hidden Markov Models
 ### CHNROY002 & TLDEDA001
 
 **CONTENTS**
